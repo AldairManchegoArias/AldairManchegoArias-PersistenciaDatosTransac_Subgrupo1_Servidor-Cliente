@@ -13,6 +13,11 @@ import javafx.scene.text.TextFlow;
 
 import java.util.Set;
 
+/**
+ * Controller class for the chat server's user interface.
+ * Manages the UI components and provides methods to update the interface
+ * with messages, status updates, and the list of connected users.
+ */
 public class HelloController {
 
     @FXML
@@ -28,6 +33,10 @@ public class HelloController {
     public static Label labelStatusStatic;
     public static ListView<String> listViewUsersStatic;
 
+    /**
+     * Initializes the controller after its root element has been completely processed.
+     * Sets up static references to UI components and initializes the status label.
+     */
     @FXML
     public void initialize() {
         vboxStatic = vbox_messages;
@@ -37,6 +46,13 @@ public class HelloController {
         labelStatusStatic.setText("Servidor en espera...");
     }
 
+    /**
+     * Adds a message to the chat interface.
+     * Creates a styled text bubble containing the message and adds it to the specified VBox.
+     *
+     * @param messageFromClient The message text to display
+     * @param vbox The VBox container where the message will be added
+     */
     public static void addLabel(String messageFromClient, VBox vbox) {
         HBox hBox = new HBox();
         hBox.setAlignment(Pos.CENTER_LEFT);
@@ -52,6 +68,12 @@ public class HelloController {
         Platform.runLater(() -> vbox.getChildren().add(hBox));
     }
 
+    /**
+     * Updates the status label in the user interface.
+     * Uses Platform.runLater to ensure the update happens on the JavaFX application thread.
+     *
+     * @param message The status message to display
+     */
     public static void updateStatus(String message) {
         Platform.runLater(() -> {
             if (labelStatusStatic != null) {
@@ -60,6 +82,13 @@ public class HelloController {
         });
     }
 
+    /**
+     * Updates the list of connected users in the user interface.
+     * Replaces the current list with the provided set of usernames.
+     * Uses Platform.runLater to ensure the update happens on the JavaFX application thread.
+     *
+     * @param usernames Set of usernames to display in the list
+     */
     public static void updateUserList(Set<String> usernames) {
         Platform.runLater(() -> {
             listViewUsersStatic.getItems().setAll(usernames);

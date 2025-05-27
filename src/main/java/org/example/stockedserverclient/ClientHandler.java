@@ -5,6 +5,11 @@ import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Class that handles client connections to the chat server.
+ * Manages communication between clients, sending private and broadcast messages
+ * and maintains an updated list of connected users.
+ */
 public class ClientHandler implements Runnable {
 
     public static Map<String, ClientHandler> clientMap = new HashMap<>();
@@ -14,6 +19,13 @@ public class ClientHandler implements Runnable {
     private String username;
     private boolean isClosed = false;
 
+    /**
+     * Constructor that initializes a new client handler.
+     * Sets up input/output streams, registers the client in the client map,
+     * updates the user interface and starts a new thread to handle client messages.
+     *
+     * @param socket The connection socket with the client
+     */
     public ClientHandler(Socket socket) {
         try {
             this.socket = socket;
@@ -23,11 +35,11 @@ public class ClientHandler implements Runnable {
             this.username = reader.readLine();
             clientMap.put(username, this);
 
-            HelloController.addLabel("Conectado: " + username, HelloController.vboxStatic);
-            HelloController.updateStatus("Conectado: " + username);
+            HelloController.addLabel("Connected: " + username, HelloController.vboxStatic);
+            HelloController.updateStatus("Connected: " + username);
             HelloController.updateUserList(clientMap.keySet());
 
-            sendUserListToAll(); // actualiza todos los clientes
+            sendUserListToAll(); // updates all clients
 
             broadcast("Servidor: " + username + " se ha unido al chat");
 
@@ -38,6 +50,11 @@ public class ClientHandler implements Runnable {
         }
     }
 
+    /**
+     * Implementation of the run method from the Runnable interface.
+     * Handles continuous reading of client messages, processes private messages
+     * and detects disconnection commands ("chao").
+     */
     @Override
     public void run() {
         try {
@@ -66,7 +83,7 @@ public class ClientHandler implements Runnable {
                     }
                 }
 
-                // Opción adicional para detectar "chao" directo sin @usuario (opcional)
+                // Additional option to detect direct "chao" without @user (optional)
                 else if (message.equalsIgnoreCase("chao")) {
                     broadcast("Servidor: " + username + " ha salido del chat");
                     closeEverything();
@@ -75,10 +92,17 @@ public class ClientHandler implements Runnable {
 
             }
         } catch (IOException | InterruptedException e) {
-            // Silenciar desconexión inesperada
+            // Silence unexpected disconnection
         }
     }
 
+    /**
+     * Sends a private message to a specific client.
+     * If the recipient doesn't exist, notifies the sender.
+     *
+     * @param recipient The username of the recipient
+     * @param message The message to send
+     */
     public void sendPrivateMessage(String recipient, String message) {
         ClientHandler client = clientMap.get(recipient);
         try {
@@ -96,6 +120,12 @@ public class ClientHandler implements Runnable {
         }
     }
 
+    /**
+     * Sends a message to all connected clients except the sender.
+     * Used for general announcements and notifications in the chat system.
+     *
+     * @param message The message to broadcast to all clients
+     */
     public void broadcast(String message) {
         for (ClientHandler client : clientMap.values()) {
             try {
@@ -110,6 +140,11 @@ public class ClientHandler implements Runnable {
         }
     }
 
+    /**
+     * Sends an updated list of all connected users to all clients.
+     * Allows client interfaces to maintain an updated list of available users.
+     * The message format is "USERLIST:user1,user2,user3,"
+     */
     public void sendUserListToAll() {
         StringBuilder users = new StringBuilder("USERLIST:");
         for (String user : clientMap.keySet()) {
@@ -127,6 +162,11 @@ public class ClientHandler implements Runnable {
         }
     }
 
+    /**
+     * Closes all connections and resources associated with this client.
+     * Removes the client from the client map, updates the user interface,
+     * notifies other clients about the disconnection and closes all streams and the socket.
+     */
     public void closeEverything() {
         if (isClosed) return;
         isClosed = true;
@@ -137,7 +177,7 @@ public class ClientHandler implements Runnable {
             HelloController.updateStatus("Desconectado: " + username);
             HelloController.updateUserList(clientMap.keySet());
 
-            sendUserListToAll(); // actualiza lista en los demás clientes
+            sendUserListToAll(); // updates list for other clients
 
             if (reader != null) reader.close();
             if (writer != null) writer.close();
